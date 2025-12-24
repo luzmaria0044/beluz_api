@@ -3,10 +3,18 @@ import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
+import * as express from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+  });
   const configService = app.get(ConfigService);
+
+  // Increase payload limit for base64 encoded images
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   // Global prefix
   const apiPrefix = configService.get('API_PREFIX') || 'api/v1';
@@ -26,6 +34,9 @@ async function bootstrap() {
       optionsSuccessStatus: 204,
     });
   }
+
+  // Global exception filter
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   // Global validation pipe
   app.useGlobalPipes(

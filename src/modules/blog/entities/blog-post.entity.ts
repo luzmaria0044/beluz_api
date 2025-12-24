@@ -23,7 +23,7 @@ export class BlogPost {
   @Column({ unique: true })
   slug: string;
 
-  @Column()
+  @Column('longtext')
   coverImage: string;
 
   @Column({

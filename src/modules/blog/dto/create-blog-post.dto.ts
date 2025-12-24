@@ -15,10 +15,10 @@ import { BlogStatus } from '../enums/blog-status.enum';
 
 export class CreateBlogPostDto {
   @ApiProperty({ example: 'Guía completa para comprar tu primera propiedad' })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(10)
-  @MaxLength(200)
+  @IsString({ message: 'El título debe ser un texto válido' })
+  @IsNotEmpty({ message: 'El título es obligatorio' })
+  @MinLength(10, { message: 'El título debe tener al menos 10 caracteres' })
+  @MaxLength(200, { message: 'El título no puede exceder 200 caracteres' })
   title: string;
 
   @ApiProperty({
@@ -26,27 +26,27 @@ export class CreateBlogPostDto {
     required: false,
     description: 'URL-friendly slug. Si no se proporciona, se genera automáticamente del título',
   })
-  @IsString()
+  @IsString({ message: 'El slug debe ser un texto válido' })
   @IsOptional()
   slug?: string;
 
   @ApiProperty({ example: 'https://example.com/cover-image.jpg' })
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'La imagen de portada debe ser una URL válida' })
+  @IsNotEmpty({ message: 'La imagen de portada es obligatoria' })
   coverImage: string;
 
   @ApiProperty({ enum: BlogCategory, example: BlogCategory.GUIDE })
-  @IsEnum(BlogCategory)
-  @IsNotEmpty()
+  @IsEnum(BlogCategory, { message: 'La categoría debe ser una de las opciones válidas' })
+  @IsNotEmpty({ message: 'La categoría es obligatoria' })
   category: BlogCategory;
 
   @ApiProperty({
     example: '<p>Contenido del artículo en HTML...</p>',
     description: 'Contenido en formato HTML enriquecido',
   })
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(100)
+  @IsString({ message: 'El contenido debe ser un texto válido' })
+  @IsNotEmpty({ message: 'El contenido es obligatorio' })
+  @MinLength(100, { message: 'El contenido debe tener al menos 100 caracteres' })
   content: string;
 
   @ApiProperty({
@@ -54,9 +54,9 @@ export class CreateBlogPostDto {
     required: false,
     description: 'Resumen corto del artículo (150-200 caracteres)',
   })
-  @IsString()
+  @IsString({ message: 'El extracto debe ser un texto válido' })
   @IsOptional()
-  @MaxLength(300)
+  @MaxLength(300, { message: 'El extracto no puede exceder 300 caracteres' })
   excerpt?: string;
 
   @ApiProperty({
@@ -65,7 +65,7 @@ export class CreateBlogPostDto {
     required: false,
     default: BlogStatus.DRAFT,
   })
-  @IsEnum(BlogStatus)
+  @IsEnum(BlogStatus, { message: 'El estado debe ser una de las opciones válidas' })
   @IsOptional()
   status?: BlogStatus;
 
@@ -74,7 +74,7 @@ export class CreateBlogPostDto {
     required: false,
     description: 'Fecha programada para publicación automática',
   })
-  @IsDateString()
+  @IsDateString({}, { message: 'La fecha de programación debe ser una fecha válida' })
   @IsOptional()
   scheduledFor?: Date;
 
@@ -82,8 +82,8 @@ export class CreateBlogPostDto {
     example: 'user-uuid-123',
     description: 'ID del autor del post',
   })
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'El ID del autor debe ser un texto válido' })
+  @IsNotEmpty({ message: 'El ID del autor es obligatorio' })
   authorId: string;
 
   @ApiProperty({
@@ -91,9 +91,9 @@ export class CreateBlogPostDto {
     required: false,
     description: 'Meta descripción para SEO (150-160 caracteres recomendados)',
   })
-  @IsString()
+  @IsString({ message: 'La meta descripción debe ser un texto válido' })
   @IsOptional()
-  @MaxLength(160)
+  @MaxLength(160, { message: 'La meta descripción no puede exceder 160 caracteres' })
   metaDescription?: string;
 
   @ApiProperty({
@@ -101,8 +101,8 @@ export class CreateBlogPostDto {
     required: false,
     description: 'Etiquetas para clasificación y búsqueda',
   })
-  @IsArray()
-  @IsString({ each: true })
+  @IsArray({ message: 'Las etiquetas deben ser un array' })
+  @IsString({ each: true, message: 'Cada etiqueta debe ser un texto válido' })
   @IsOptional()
   tags?: string[];
 
@@ -112,7 +112,7 @@ export class CreateBlogPostDto {
     default: false,
     description: 'Marcar como post destacado',
   })
-  @IsBoolean()
+  @IsBoolean({ message: 'El campo destacado debe ser verdadero o falso' })
   @IsOptional()
   isFeatured?: boolean;
 }
