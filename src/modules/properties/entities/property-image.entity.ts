@@ -12,7 +12,7 @@ export class PropertyImage {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column('longtext')
   url: string;
 
   @Column({ default: 0 })
