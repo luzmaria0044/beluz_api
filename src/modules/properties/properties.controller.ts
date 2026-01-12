@@ -8,11 +8,16 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { PropertiesService } from './properties.service';
+import { PropertiesImportService } from './properties-import.service';
 import { CreatePropertyDto } from './dto/create-property.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
+import { ImportPropertiesResponseDto } from './dto/import-properties.dto';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@common/guards/roles.guard';
 import { PermissionsGuard } from '@common/guards/permissions.guard';
@@ -26,7 +31,10 @@ import { OperationType } from './enums/operation-type.enum';
 @ApiTags('Properties')
 @Controller('properties')
 export class PropertiesController {
-  constructor(private readonly propertiesService: PropertiesService) {}
+  constructor(
+    private readonly propertiesService: PropertiesService,
+    private readonly propertiesImportService: PropertiesImportService,
+  ) {}
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -81,5 +89,34 @@ export class PropertiesController {
   @ApiOperation({ summary: 'Delete property (Admin only)' })
   remove(@Param('id') id: string) {
     return this.propertiesService.remove(id);
+  }
+
+  @Post('import')
+  @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @Permissions(Permission.CREATE_PROPERTY)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Import properties from Excel file' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('file'))
+  async importProperties(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<ImportPropertiesResponseDto> {
+    if (!file) {
+      throw new Error('No file uploaded');
+    }
+
+    return this.propertiesImportService.importFromExcel(file.buffer);
   }
 }
